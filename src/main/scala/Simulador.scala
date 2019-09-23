@@ -1,14 +1,24 @@
 import scala.util.Random
 
-class Simulador(var tcc: Array[Int], var stoc: Array[Int], var ptoc: Array[Int],
-                var tcr: Array[Int], var stor: Array[Int], var ptor: Array[Int],
-                var NC: Int, var NR: Int) extends Variables {
+object Main {
+  def main(args: Array[String]): Unit = {
+    val simulador = new Simulador()
+
+    simulador.simular(3, 2)
+  }
+}
+
+class Simulador(var tcc: Array[Int] = Array.emptyIntArray, var stoc: Array[Int] = Array.emptyIntArray, var ptoc: Array[Int] = Array.emptyIntArray,
+                var tcr: Array[Int] = Array.emptyIntArray, var stor: Array[Int] = Array.emptyIntArray, var ptor: Array[Int] = Array.emptyIntArray,
+                var NC: Int = 0, var NR: Int = 0) extends Variables {
 
   def inicializar: Unit = {
     tcc = new Array[Int](NC)
     stoc = new Array[Int](NC)
+    ptoc = new Array[Int](NC)
     tcr = new Array[Int](NR)
     stor = new Array[Int](NR)
+    ptor = new Array[Int](NR)
   }
 
   def simular(_NC: Int, _NR: Int): Unit = {
@@ -22,7 +32,7 @@ class Simulador(var tcc: Array[Int], var stoc: Array[Int], var ptoc: Array[Int],
       tllp = t + ia
       r = random
       p = porcentajeSegunDia
-      i = menorTiempo()
+      i = menorTiempo(tcc)
       tep = tiempoEnvioPedido
       tpp = tiempoPreparacionPedido
 
@@ -36,7 +46,7 @@ class Simulador(var tcc: Array[Int], var stoc: Array[Int], var ptoc: Array[Int],
   }
 
   def atenderEnvio(): Unit = {
-    j = menorTiempo()
+    j = menorTiempo(tcr)
     if (seArrepienteEnEnvio)
       return
 
@@ -76,11 +86,18 @@ class Simulador(var tcc: Array[Int], var stoc: Array[Int], var ptoc: Array[Int],
   }
 
   def calcularResultados: Unit = {
-    for (i <- 0 to NC) ptoc(i) = stoc(i) / t * 100
+    for (i <- 0 until NC) {
+      ptoc(i) = stoc(i) / t * 100
+      println(ptoc(i))
+    }
 
-    for (j <- 0 to NR) ptor(j) = stor(j) / t * 100
+    for (j <- 0 until NR) {
+      ptor(j) = stor(j) / t * 100
+      println(ptor(j))
+    }
 
     pte = ste / spa
+    println(pte)
   }
 
   def seArrepienteEnEnvio: Boolean = {
@@ -133,6 +150,7 @@ class Simulador(var tcc: Array[Int], var stoc: Array[Int], var ptoc: Array[Int],
     semanaOFinde.porcentajeEnvios
   }
 
+  def menorTiempo(tc: Array[Int]): Int = tc.min
 
 
 
@@ -140,7 +158,6 @@ class Simulador(var tcc: Array[Int], var stoc: Array[Int], var ptoc: Array[Int],
 
 
 
-  def menorTiempo(): Int = 1
 
   def tiempoEnvioPedido: Int = 15
 
@@ -148,9 +165,10 @@ class Simulador(var tcc: Array[Int], var stoc: Array[Int], var ptoc: Array[Int],
 }
 
 
+
 abstract class Variables {
   var t: Int = 0
-  var tf: Int = 500
+  var tf: Int = 3000
   var tllp: Int = 0
   var ia: Int = 0
   var tep: Int = 0
