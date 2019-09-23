@@ -4,7 +4,7 @@ object Main {
   def main(args: Array[String]): Unit = {
     val simulador = new Simulador()
 
-    simulador.simular(3, 2)
+    simulador.simular(3, 10)
   }
 }
 
@@ -58,12 +58,12 @@ class Simulador(var tcc: Array[Int] = Array.emptyIntArray, var stoc: Array[Int] 
     }
 
     if (tcc(i) >= tcr(j)) {
-      ste += tcc(i) + tep - t
+      ste += tcc(i) + tep / 2 - t
       stor(j) += t - tcr(j)
-      tcr(j) = tcc(i) + tep * 2
+      tcr(j) = tcc(i) + tep
     } else {
-      ste += tcr(j) + tep - t
-      tcr(j) += tep * 2
+      ste += tcr(j) + tep / 2 - t
+      tcr(j) += tep
     }
 
     spa += 1
@@ -152,16 +152,9 @@ class Simulador(var tcc: Array[Int] = Array.emptyIntArray, var stoc: Array[Int] 
 
   def menorTiempo(tc: Array[Int]): Int = tc.min
 
+  def tiempoEnvioPedido: Int = 9 + (20 - 9) * random / 100
 
-
-
-
-
-
-
-  def tiempoEnvioPedido: Int = 15
-
-  def tiempoPreparacionPedido: Int = 10
+  def tiempoPreparacionPedido: Int = 5 + (16 - 5) * random / 100
 }
 
 
@@ -195,12 +188,12 @@ trait SemanaOFinde {
   def porcentajeEnvios: Int
 }
 object Semana extends SemanaOFinde {
-  override def intervaloEntreArribos: Int = 10
+  override def intervaloEntreArribos: Int = 15
 
   override def porcentajeEnvios: Int = 75
 }
 object Finde extends SemanaOFinde {
-  override def intervaloEntreArribos: Int = 15
+  override def intervaloEntreArribos: Int = 5
 
   override def porcentajeEnvios: Int = 60
 }
