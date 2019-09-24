@@ -4,7 +4,7 @@ object Main {
   def main(args: Array[String]): Unit = {
     val simulador = new Simulador()
 
-    simulador.simular(3, 10)
+    simulador.simular(3, 2)
   }
 }
 
@@ -32,7 +32,7 @@ class Simulador(var tcc: Array[Int] = Array.emptyIntArray, var stoc: Array[Int] 
       tllp = t + ia
       r = random
       p = porcentajeSegunDia
-      i = menorTiempo(tcc)
+      i = menorTiempo(tcc, stoc)
       tep = tiempoEnvioPedido
       tpp = tiempoPreparacionPedido
 
@@ -46,58 +46,66 @@ class Simulador(var tcc: Array[Int] = Array.emptyIntArray, var stoc: Array[Int] 
   }
 
   def atenderEnvio(): Unit = {
-    j = menorTiempo(tcr)
+    j = menorTiempo(tcr, stor)
     if (seArrepienteEnEnvio)
       return
 
-    if (t >= tcc(i)) {
+    if (t > tcc(i)) {
       stoc(i) += t - tcc(i)
       tcc(i) = t + tpp
     } else {
       tcc(i) += tpp
     }
 
-    if (tcc(i) >= tcr(j)) {
-      ste += tcc(i) + tep / 2 - t
-      stor(j) += t - tcr(j)
+    if (tcc(i) > tcr(j)) {
+      stor(j) += tcc(i) - tcr(j)
+      println
+      stee += tcc(i) + tep / 2 - t
       tcr(j) = tcc(i) + tep
     } else {
-      ste += tcr(j) + tep / 2 - t
+      stee += tcr(j) + tep / 2 - t
       tcr(j) += tep
     }
 
-    spa += 1
+    spae += 1
   }
 
   def atenderLocal(): Unit = {
     if (seArrepienteEnLocal)
       return
 
-    if (t >= tcc(i)) {
-      ste += tpp
+    if (t > tcc(i)) {
+      stel += tpp
       stoc(i) += t - tcc(i)
       tcc(i) = t + tpp
     } else {
-      ste += tcc(i) + tpp
+      stel += tcc(i) + tpp
       tcc(i) += tpp
     }
 
-    spa += 1
+    spal += 1
   }
 
   def calcularResultados: Unit = {
+    println("Resultados obtenidos: ")
+    println("-------------------------------------")
+    println("Cantidad de repartidores: " + NR)
+    println("Cantidad de cocineros: " + NC)
+    
     for (i <- 0 until NC) {
-      ptoc(i) = stoc(i) / t * 100
-      println(ptoc(i))
+      ptoc(i) = stoc(i) * 100 / t 
+      println("PTOC(" + i + "): " + ptoc(i) + " minutos")
     }
 
     for (j <- 0 until NR) {
-      ptor(j) = stor(j) / t * 100
-      println(ptor(j))
+      ptor(j) = stor(j) * 100 / t 
+      println("PTOR(" + j + "): " + ptor(j) + " minutos")
     }
-
-    pte = ste / spa
-    println(pte)
+    
+    ptee = stee / spae
+    ptel = stel / spal
+    println("PTEE: " + ptee + " minutos")
+    println("PTEL: " + ptel + " minutos")
   }
 
   def seArrepienteEnEnvio: Boolean = {
@@ -150,7 +158,30 @@ class Simulador(var tcc: Array[Int] = Array.emptyIntArray, var stoc: Array[Int] 
     semanaOFinde.porcentajeEnvios
   }
 
-  def menorTiempo(tc: Array[Int]): Int = tc.min
+  def menorTiempo(tc: Array[Int], sto: Array[Int]): Int = {
+    var minimo: Int = 1000
+    var tc_minimos: Array[Int] = Array.emptyIntArray
+    var maximo: Int = 0
+    var index: Int = 0
+
+    for (i <- 0 until tc.length) {
+      if (tc(i) <= minimo) {
+        minimo = tc(i)
+        tc_minimos :+ i
+        index = i
+      }
+    }
+    
+    if (tc_minimos.length > 0) {
+      for (i <- 0 until tc_minimos.length) {
+        if (sto(i) >= maximo) {
+          maximo = sto(i)
+          index = tc_minimos(i)
+        }
+      }
+    }
+    return index
+  }
 
   def tiempoEnvioPedido: Int = 9 + (20 - 9) * random / 100
 
@@ -161,7 +192,7 @@ class Simulador(var tcc: Array[Int] = Array.emptyIntArray, var stoc: Array[Int] 
 
 abstract class Variables {
   var t: Int = 0
-  var tf: Int = 3000
+  var tf: Int = 10000
   var tllp: Int = 0
   var ia: Int = 0
   var tep: Int = 0
@@ -172,10 +203,12 @@ abstract class Variables {
   var tcr, stor: Array[Int]
   var ptoc, ptor: Array[Int]
 
-  var ste: Int = 0
-  var spa: Int = 0
-  var pte: Int = 0
-
+  var stee: Int = 0
+  var stel: Int = 0
+  var spal: Int = 0
+  var spae: Int = 0
+  var ptee: Int = 0
+  var ptel: Int = 0
 
   var r: Int = 0
   var p: Int = 0
@@ -187,11 +220,13 @@ trait SemanaOFinde {
 
   def porcentajeEnvios: Int
 }
+
 object Semana extends SemanaOFinde {
   override def intervaloEntreArribos: Int = 15
 
   override def porcentajeEnvios: Int = 75
 }
+
 object Finde extends SemanaOFinde {
   override def intervaloEntreArribos: Int = 5
 
